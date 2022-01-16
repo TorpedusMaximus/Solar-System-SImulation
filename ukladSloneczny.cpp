@@ -13,19 +13,23 @@ using namespace std;
 
 typedef float point3[3];
 typedef float point9[9];
+
 static GLfloat viewer[] = { 100.0, 500.0, 100.0 , 0.0, 200.0 , 0.0 };
 static GLfloat azymuth = 0;
 static GLfloat elevation = 0;
 static GLfloat azymuth2 = 0;
 static GLfloat elevation2 = 0;
+
 static int x_pos_old = 0;
 static int delta_x = 0;
 static int y_pos_old = 0;
 static int delta_y = 0;
 static GLfloat pix2angle;
+
 static GLint statusMiddle = 0;
 static GLint statusLeft = 0;
 static GLint statusRight = 0;
+
 int r = 10;
 int days[] = { 88,224,365,686,4333,10756,30707, 60223 };
 int speed = 1;
@@ -34,10 +38,18 @@ time_t start;
 int radius[] = { 57,108,149,227,778,1433,2872,4498 };
 float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30 };
 bool simulation = false;
+float ring[3600];
+int segments = 10000;
+int rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
+GLbyte* textures[10];
+GLint ImWidth[10], ImHeight[10], ImComponents[10];
+GLenum ImFormat[10];
 
-int segments = 1000;
+bool show = true;
+bool click = false;
 
-void tekstura(const char plik[]);
+
+void texture(int textureID);
 
 void orbit(int planet) {
 	glBegin(GL_LINE_LOOP);
@@ -52,14 +64,14 @@ void orbit(int planet) {
 }
 
 void orbits() {
-	tekstura("orbits.tga");
+	texture(9);
 	for (int planet : radius) {
 		orbit(planet);
 	}
 }
 
 void sun() {
-	tekstura("sun.tga");
+	texture(8);
 	glutSolidSphere(planetSize[8], segments, segments);
 }
 
@@ -69,7 +81,7 @@ void mercury() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[0];
 
 	glTranslatef(x, 0, y);
-	tekstura("mercury.tga");
+	texture(0);
 	glutSolidSphere(planetSize[0], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -80,7 +92,7 @@ void venus() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[1];
 
 	glTranslatef(x, 0, y);
-	tekstura("venus.tga");
+	texture(1);
 	glutSolidSphere(planetSize[1], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -91,7 +103,7 @@ void earth() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[2];
 
 	glTranslatef(x, 0, y);
-	tekstura("earth.tga");
+	texture(2);
 	glutSolidSphere(planetSize[2], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -102,7 +114,7 @@ void mars() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[3];
 
 	glTranslatef(x, 0, y);
-	tekstura("mars.tga");
+	texture(3);
 	glutSolidSphere(planetSize[3], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -113,7 +125,7 @@ void jupiter() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[4];
 
 	glTranslatef(x, 0, y);
-	tekstura("jupiter.tga");
+	texture(4);
 	glutSolidSphere(planetSize[4], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -124,9 +136,25 @@ void saturn() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[5];
 
 	glTranslatef(x, 0, y);
-	tekstura("saturn.tga");
+	texture(5);
 	glutSolidSphere(planetSize[5], segments, segments);
 	glTranslatef(-x, 0, -y);
+
+
+	for (int i : rings) {
+		glColor3f(1, 1, 1);
+		glBegin(GL_LINE_LOOP);
+		for (int ii = 0; ii < 3600; ii++) {
+			float angle = 1.0 * float(ii) / float(3600);
+			float xr = i * cos(2 * M_PI * angle);
+			float yr = i * sin(2 * M_PI * angle);
+
+			glVertex3f(xr + x, (i / 5) * ring[ii], yr + y);
+		}
+		glEnd();
+	}
+
+
 }
 
 void uranus() {
@@ -135,7 +163,7 @@ void uranus() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[6];
 
 	glTranslatef(x, 0, y);
-	tekstura("uranus.tga");
+	texture(6);
 	glutSolidSphere(planetSize[6], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -146,7 +174,7 @@ void neptune() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[7];
 
 	glTranslatef(x, 0, y);
-	tekstura("neptune.tga");
+	texture(7);
 	glutSolidSphere(planetSize[7], segments, segments);
 	glTranslatef(-x, 0, -y);
 }
@@ -195,6 +223,7 @@ void ukladSloneczny() {
 }
 
 void printDay() {
+	const int characters = 80;
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -203,13 +232,54 @@ void printDay() {
 	glPushMatrix();
 	glLoadIdentity();
 
-	tekstura("orbits.tga");
+	texture(9);
 	glRasterPos2i(10, 970);
-	char printDay[20];
-	sprintf_s(printDay, " day: %d", day);
-	for (int i = 0; i < 20; ++i) {
+	char printDay[characters];
+	sprintf_s(printDay, " Day: %d", day);
+	for (int i = 0; i < characters; ++i) {
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(10, 945);
+	sprintf_s(printDay, " Speed: %d days/second", speed * 20);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(10, 90);
+	sprintf_s(printDay, " h - help");
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	if (show) {
+		glRasterPos2i(400, 600);
+		sprintf_s(printDay, " u - increase speed");
+		for (int i = 0; i < characters; ++i) {
+			glColor3f(1, 1, 1);
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+		}
+		glRasterPos2i(400, 560);
+		sprintf_s(printDay, " j - decrease speed");
+		for (int i = 0; i < characters; ++i) {
+			glColor3f(1, 1, 1);
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+		}
+		glRasterPos2i(400, 520);
+		sprintf_s(printDay, " left mouse - move camera");
+		for (int i = 0; i < characters; ++i) {
+			glColor3f(1, 1, 1);
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+		}
+		glRasterPos2i(400, 480);
+		sprintf_s(printDay, " right mouse - zoom");
+		for (int i = 0; i < characters; ++i) {
+			glColor3f(1, 1, 1);
+			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+		}
 	}
 
 	glPopMatrix();
@@ -223,6 +293,13 @@ void RenderScene(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	gluLookAt(viewer[0], viewer[1], viewer[2], viewer[3], viewer[4], viewer[5], 0.0, 1.0, 0.0);
+
+	if (click && show) {
+		time_t now = clock();
+		if ((now - start) / CLOCKS_PER_SEC >= 3) {
+			show = false;
+		}
+	}
 
 	ukladSloneczny();
 	printDay();
@@ -251,7 +328,7 @@ void Mouse(int btn, int state, int x, int y)
 		statusLeft = 0;		//ustawienie flagi przycisku  
 	}
 
-	if (btn == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN) {//sprawdzenie czy przycisniety zostal lewy klawisz
+	if (btn == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN) {//sprawdzenie czy przycisniety zostal scroll
 		x_pos_old = x;
 		y_pos_old = y;
 		statusMiddle = 1;    //ustawienie flagi przycisku    
@@ -259,7 +336,11 @@ void Mouse(int btn, int state, int x, int y)
 	else {
 		statusMiddle = 0;		//ustawienie flagi przycisku  
 	}
-
+	if (!click) {    //wylaczenie pomocy
+		click = true;
+		start = clock();
+	}
+	
 	RenderScene();
 }
 
@@ -272,19 +353,20 @@ void keys(unsigned char key, int x, int y)
 		viewer[3] = 0;
 		viewer[4] = 0;
 		viewer[5] = 0;
+
 	}
 	if (key == 'u') {
 		speed++;
-		if (speed > 10) {
-			speed = 10;
-		}
 	}
 	if (key == 'j') {
 		speed--;
-		if (speed < -10) {
-			speed = -10;
-		}
 	}
+	if (!click) {
+		click = true;
+		start = clock();
+	}
+
+
 
 	RenderScene();
 }
@@ -434,15 +516,9 @@ GLbyte* LoadTGAImage(const char* FileName, GLint* ImWidth, GLint* ImHeight, GLin
 
 }
 
-void tekstura(const char plik[]) {//plik to nazwa wczytywanego pliku
-	GLbyte* pBytes;
-	GLint ImWidth, ImHeight, ImComponents;
-	GLenum ImFormat;
+void texture(int textureID) {//plik to nazwa wczytywanego pliku
 
-	pBytes = LoadTGAImage(plik, &ImWidth, &ImHeight, &ImComponents, &ImFormat);//wczytanie tekstury
-	glTexImage2D(GL_TEXTURE_2D, 0, ImComponents, ImWidth, ImHeight, 0, ImFormat, GL_UNSIGNED_BYTE, pBytes);//zdefiniowanie tekstury
-	free(pBytes);
-
+	glTexImage2D(GL_TEXTURE_2D, 0, ImComponents[textureID], ImWidth[textureID], ImHeight[textureID], 0, ImFormat[textureID], GL_UNSIGNED_BYTE, textures[textureID]);//zdefiniowanie tekstury
 	glEnable(GL_CULL_FACE);//uruchomienie teksturowania jednostronnego
 	glCullFace(GL_FRONT);//uruchomienie teksturowania frontu
 	glEnable(GL_TEXTURE_2D);//uruchomienie tekstur
@@ -450,6 +526,30 @@ void tekstura(const char plik[]) {//plik to nazwa wczytywanego pliku
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//sposob nakladania tekstur
 }
 
+void loadTextures() {
+	const char* plik[] = {
+		"mercury.tga",
+		"venus.tga",
+		"earth.tga",
+		"mars.tga",
+		"jupiter.tga",
+		"saturn.tga",
+		"uranus.tga",
+		"neptune.tga",
+		"sun.tga",
+		"orbits.tga"
+	};
+	GLbyte* pBytes;
+
+	int i = 0;
+	for (auto sciezka : plik) {
+		pBytes = new GLbyte;
+		pBytes = LoadTGAImage(sciezka, &ImWidth[i], &ImHeight[i], &ImComponents[i], &ImFormat[i]);//wczytanie tekstury
+		textures[i] = pBytes;
+		i++;
+	}
+
+}
 
 void material() {
 	float MatAmbient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
@@ -473,7 +573,7 @@ void light() {
 	float LightEmission[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightDiffuse[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float LightPosition[] = { 0.0f, 0.0f, 0.0f};
+	float LightPosition[] = { 0.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);
@@ -491,6 +591,7 @@ void MyInit()
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	material();
 	light();
+	loadTextures();
 }
 
 void ChangeSize(GLsizei horizontal, GLsizei vertical)
@@ -500,8 +601,8 @@ void ChangeSize(GLsizei horizontal, GLsizei vertical)
 	glLoadIdentity();
 	gluPerspective(70, 1.6, 1.0, 100000.0);
 
-	if (horizontal <= 1.6*vertical)
-		glViewport(0,(vertical - horizontal/1.6) / 2, 1.6*vertical, vertical);
+	if (horizontal <= 1.6 * vertical)
+		glViewport(0, (vertical - horizontal / 1.6) / 2, 1.6 * vertical, vertical);
 
 	else
 		glViewport((horizontal - 1.6 * vertical) / 2, 0, 1.6 * vertical, vertical);
@@ -528,6 +629,11 @@ void main(void)
 {
 	srand(time(NULL));
 	start = clock();
+
+	for (int i = 0; i < 3600; i++) {
+		float angle = 1.0 * i / 3600;
+		ring[i] = sin(2 * M_PI * angle);
+	}
 
 	cout << "" << endl;
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
