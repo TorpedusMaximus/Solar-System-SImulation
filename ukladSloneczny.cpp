@@ -14,7 +14,7 @@ using namespace std;
 typedef float point3[3];
 typedef float point9[9];
 
-static GLfloat viewer[] = { 100.0, 500.0, 100.0 , 0.0, 200.0 , 0.0 };
+static GLfloat viewer[] = { 0.0, 500.0, 0.0 , 0.0, 0.0 , 0.0 };
 static GLfloat azymuth = 0;
 static GLfloat elevation = 0;
 static GLfloat azymuth2 = 0;
@@ -204,7 +204,13 @@ void ukladSloneczny() {
 
 	if (statusLeft == 1) {
 		azymuth += delta_x * pix2angle * 0.01;
-		elevation += delta_y * pix2angle * 0.01;
+		elevation -= delta_y * pix2angle * 0.01;
+		if (sin(elevation) >= 0.99) {
+			elevation = 1.44;
+		}
+		if (sin(elevation) <= -0.99) {
+			elevation = -1.44;
+		}
 	}
 	viewer[3] = 10 * cos(azymuth) * cos(elevation) + viewer[0];
 	viewer[4] = 10 * sin(elevation) + viewer[1];
@@ -248,13 +254,6 @@ void printDay() {
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
-	glRasterPos2i(10, 90);
-	sprintf_s(printDay, " h - help");
-	for (int i = 0; i < characters; ++i) {
-		glColor3f(1, 1, 1);
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
-	}
-
 	if (show) {
 		glRasterPos2i(400, 600);
 		sprintf_s(printDay, " u - increase speed");
@@ -280,6 +279,27 @@ void printDay() {
 			glColor3f(1, 1, 1);
 			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 		}
+	}
+
+	glRasterPos2i(840, 970);
+	sprintf_s(printDay, " x: %f", viewer[0]);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(840, 945);
+	sprintf_s(printDay, " z: %f", viewer[1]);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(840, 920);
+	sprintf_s(printDay, " y: %f", viewer[2]);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glPopMatrix();
@@ -348,7 +368,7 @@ void keys(unsigned char key, int x, int y)
 {
 	if (key == 'r') {
 		viewer[0] = 0;
-		viewer[1] = 100;
+		viewer[1] = 500;
 		viewer[2] = 0;
 		viewer[3] = 0;
 		viewer[4] = 0;

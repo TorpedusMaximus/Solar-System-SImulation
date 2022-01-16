@@ -19,4 +19,17 @@
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="earth.tga" />
+    <Image Include="jupiter.tga" />
+    <Image Include="mars.tga" />
+    <Image Include="mercury.tga" />
+    <Image Include="neptune.tga" />
+    <Image Include="orbits.tga" />
+    <Image Include="saturn.tga" />
+    <Image Include="stars.tga" />
+    <Image Include="sun.tga" />
+    <Image Include="uranus.tga" />
+    <Image Include="venus.tga" />
+  </ItemGroup>
 </Project>
