@@ -33,7 +33,7 @@ static GLint statusRight = 0;
 int r = 10;
 int days[] = { 88,224,365,686,4333,10756,30707, 60223 };
 int speed = 1;
-long long day = 0;
+int day = 0;
 time_t start;
 int radius[] = { 57,108,149,227,778,1433,2872,4498 };
 float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30 };
@@ -41,12 +41,13 @@ bool simulation = false;
 float ring[3600];
 int segments = 40;
 int rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
-GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3 };
-GLfloat rotation[] = { 58.6458, 243, 0.9972, 1.025, 0.4132, 0.4444, 0.7181, 0.6667 };
+GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3, 0 };
+GLfloat rotation[] = { 1407.5, 5832, 23.9333, 24.6, 9.9167, 10.6667, 17.2333, 16, 624.6 };
 GLbyte* textures[10];
 GLint ImWidth[10], ImHeight[10], ImComponents[10];
 GLenum ImFormat[10];
 GLUquadric* sphere;
+int hour = 0;
 
 bool show = true;
 bool click = false;
@@ -55,14 +56,28 @@ bool click = false;
 void texture(int textureID);
 
 void planet(int planetID) {
-	//360*(day/rotation[planetID])
-	glRotated(-90.0, 1.0, 0.0, 0.0);
+	glRotated(-90.0, 1.0, 1.0, 0.0);
+
 	glRotated(-planetTilt[planetID], 1.0, 0.0, 0.0);
-	glRotated(360 * (rotation[planetID]/day), 0.0, 0.0, 1.0);
+
+	glRotated(360 * (((double)(day * 24) + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
+
 	gluSphere(sphere, planetSize[planetID], segments, segments);
-    glRotated(-360 * (rotation[planetID] / day), 0.0, 0.0, 1.0);
+
+	glRotated(-360 * ((day * 24 + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
+
 	glRotated(planetTilt[planetID], 1.0, 0.0, 0.0);
-	glRotated(90.0, 1.0, 0.0, 0.0);
+
+	glRotated(90.0, 1.0, 1.0, 0.0);
+}
+
+void angle(int planetID, double& x, double& y) {
+	double time = (double)(day + (double)(hour/24));
+	double timeMax = (days[planetID]);
+	double angle = (double)time / timeMax;
+	x = cos(2 * angle * M_PI) * radius[planetID];
+	y = -1 * sin(2 * angle * M_PI) * radius[planetID];
+	cout << time << endl;
 }
 
 void orbit(int planet) {
@@ -90,70 +105,63 @@ void sun() {
 }
 
 void mercury() {
-	float angle = 1.0 * day / days[0];
-	float x = cos(2 * angle * M_PI) * radius[0];
-	float y = -1 * sin(2 * angle * M_PI) * radius[0];
+	double x, y;
+	angle(0, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(0);
 	planet(0);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void venus() {
-	float angle = 1.0 * day / days[1];
-	float x = cos(2 * angle * M_PI) * radius[1];
-	float y = -1 * sin(2 * angle * M_PI) * radius[1];
+	double x, y;
+	angle(1, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(1);
 	planet(1);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void earth() {
-	float angle = 1.0 * day / days[2];
-	float x = cos(2 * angle * M_PI) * radius[2];
-	float y = -1 * sin(2 * angle * M_PI) * radius[2];
+	double x, y;
+	angle(2, x, y);
 
-	glTranslatef(x, 0, y);
-
+	glTranslated(x, 0, y);
 	texture(2);
 	planet(2);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void mars() {
-	float angle = 1.0 * day / days[3];
-	float x = cos(2 * angle * M_PI) * radius[3];
-	float y = -1 * sin(2 * angle * M_PI) * radius[3];
+	double x, y;
+	angle(3, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(3);
 	planet(3);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void jupiter() {
-	float angle = 1.0 * day / days[4];
-	float x = cos(2 * angle * M_PI) * radius[4];
-	float y = -1 * sin(2 * angle * M_PI) * radius[4];
+	double x, y;
+	angle(4, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(4);
 	planet(4);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void saturn() {
-	float angle = 1.0 * day / days[5];
-	float x = cos(2 * angle * M_PI) * radius[5];
-	float y = -1 * sin(2 * angle * M_PI) * radius[5];
+	double x, y;
+	angle(5, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(5);
 	planet(5);
-	glRotated(-planetTilt[5], 1.0, 0.0, 0.0);
+	glRotated(-planetTilt[5], 0.0, 1.0, 0.0);
 
 	for (int i : rings) {
 		glColor3f(1, 1, 1);
@@ -169,30 +177,28 @@ void saturn() {
 		glEnd();
 	}
 
-	glRotated(planetTilt[5], 1.0, 0.0, 0.0);
-	glTranslatef(-x, 0, -y);
+	glRotated(planetTilt[5], 0.0, 1.0, 0.0);
+	glTranslated(-x, 0, -y);
 }
 
 void uranus() {
-	float angle = 1.0 * day / days[6];
-	float x = cos(2 * angle * M_PI) * radius[6];
-	float y = -1 * sin(2 * angle * M_PI) * radius[6];
+	double x, y;
+	angle(6, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(6);
 	planet(6);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void neptune() {
-	float angle = 1.0 * day / days[7];
-	float x = cos(2 * angle * M_PI) * radius[7];
-	float y = -1 * sin(2 * angle * M_PI) * radius[7];
+	double x, y;
+	angle(7, x, y);
 
-	glTranslatef(x, 0, y);
+	glTranslated(x, 0, y);
 	texture(7);
 	planet(7);
-	glTranslatef(-x, 0, -y);
+	glTranslated(-x, 0, -y);
 }
 
 void zoom(bool zoom) {
@@ -264,7 +270,21 @@ void printDay() {
 	}
 
 	glRasterPos2i(10, 945);
-	sprintf_s(printDay, " Speed: %d days/second", speed * 20);
+	sprintf_s(printDay, " Hour: %d", hour);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(10, 920);
+	sprintf_s(printDay, " Speed: %d hours/second", speed * 10);
+	for (int i = 0; i < characters; ++i) {
+		glColor3f(1, 1, 1);
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
+	}
+
+	glRasterPos2i(10, 895);
+	sprintf_s(printDay, " Speed: %d days/second", (int)(speed * 10) / 24);
 	for (int i = 0; i < characters; ++i) {
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
@@ -335,6 +355,15 @@ void RenderScene(void)
 		if ((now - start) / CLOCKS_PER_SEC >= 3) {
 			show = false;
 		}
+	}
+
+	while (hour >= 24) {
+		hour -= 24;
+		day++;
+	}
+	while (hour <= -24) {
+		hour += 24;
+		day--;
 	}
 
 	ukladSloneczny();
@@ -657,15 +686,15 @@ void ChangeSize(GLsizei horizontal, GLsizei vertical)
 }
 
 void dayByDay() {
-	day += speed;
-	Sleep(5);
+	hour += speed;
+	Sleep(10);
 	RenderScene();
 
-	if (day >= LLONG_MAX - 2) {
-		day = LLONG_MIN + 2;
+	if (day >= INT_MAX - 5) {
+		day = INT_MIN + 5;
 	}
-	if (day <= LLONG_MIN + 2) {
-		day = LLONG_MAX - 2;
+	if (day <= INT_MIN + 5) {
+		day = INT_MAX - 5;
 	}
 }
 
