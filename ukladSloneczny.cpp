@@ -39,17 +39,31 @@ int radius[] = { 57,108,149,227,778,1433,2872,4498 };
 float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30 };
 bool simulation = false;
 float ring[3600];
-int segments = 10000;
+int segments = 40;
 int rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
+GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3 };
+GLfloat rotation[] = { 58.6458, 243, 0.9972, 1.025, 0.4132, 0.4444, 0.7181, 0.6667 };
 GLbyte* textures[10];
 GLint ImWidth[10], ImHeight[10], ImComponents[10];
 GLenum ImFormat[10];
+GLUquadric* sphere;
 
 bool show = true;
 bool click = false;
 
 
 void texture(int textureID);
+
+void planet(int planetID) {
+	//360*(day/rotation[planetID])
+	glRotated(-90.0, 1.0, 0.0, 0.0);
+	glRotated(-planetTilt[planetID], 1.0, 0.0, 0.0);
+	glRotated(360 * (rotation[planetID]/day), 0.0, 0.0, 1.0);
+	gluSphere(sphere, planetSize[planetID], segments, segments);
+    glRotated(-360 * (rotation[planetID] / day), 0.0, 0.0, 1.0);
+	glRotated(planetTilt[planetID], 1.0, 0.0, 0.0);
+	glRotated(90.0, 1.0, 0.0, 0.0);
+}
 
 void orbit(int planet) {
 	glBegin(GL_LINE_LOOP);
@@ -72,7 +86,7 @@ void orbits() {
 
 void sun() {
 	texture(8);
-	glutSolidSphere(planetSize[8], segments, segments);
+	planet(8);
 }
 
 void mercury() {
@@ -82,7 +96,7 @@ void mercury() {
 
 	glTranslatef(x, 0, y);
 	texture(0);
-	glutSolidSphere(planetSize[0], segments, segments);
+	planet(0);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -93,7 +107,7 @@ void venus() {
 
 	glTranslatef(x, 0, y);
 	texture(1);
-	glutSolidSphere(planetSize[1], segments, segments);
+	planet(1);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -103,8 +117,9 @@ void earth() {
 	float y = -1 * sin(2 * angle * M_PI) * radius[2];
 
 	glTranslatef(x, 0, y);
+
 	texture(2);
-	glutSolidSphere(planetSize[2], segments, segments);
+	planet(2);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -115,7 +130,7 @@ void mars() {
 
 	glTranslatef(x, 0, y);
 	texture(3);
-	glutSolidSphere(planetSize[3], segments, segments);
+	planet(3);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -126,7 +141,7 @@ void jupiter() {
 
 	glTranslatef(x, 0, y);
 	texture(4);
-	glutSolidSphere(planetSize[4], segments, segments);
+	planet(4);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -137,24 +152,25 @@ void saturn() {
 
 	glTranslatef(x, 0, y);
 	texture(5);
-	glutSolidSphere(planetSize[5], segments, segments);
-	glTranslatef(-x, 0, -y);
-
+	planet(5);
+	glRotated(-planetTilt[5], 1.0, 0.0, 0.0);
 
 	for (int i : rings) {
 		glColor3f(1, 1, 1);
+
 		glBegin(GL_LINE_LOOP);
 		for (int ii = 0; ii < 3600; ii++) {
 			float angle = 1.0 * float(ii) / float(3600);
 			float xr = i * cos(2 * M_PI * angle);
 			float yr = i * sin(2 * M_PI * angle);
 
-			glVertex3f(xr + x, (i / 5) * ring[ii], yr + y);
+			glVertex3f(xr, 0, yr);
 		}
 		glEnd();
 	}
 
-
+	glRotated(planetTilt[5], 1.0, 0.0, 0.0);
+	glTranslatef(-x, 0, -y);
 }
 
 void uranus() {
@@ -164,7 +180,7 @@ void uranus() {
 
 	glTranslatef(x, 0, y);
 	texture(6);
-	glutSolidSphere(planetSize[6], segments, segments);
+	planet(6);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -175,7 +191,7 @@ void neptune() {
 
 	glTranslatef(x, 0, y);
 	texture(7);
-	glutSolidSphere(planetSize[7], segments, segments);
+	planet(7);
 	glTranslatef(-x, 0, -y);
 }
 
@@ -360,7 +376,7 @@ void Mouse(int btn, int state, int x, int y)
 		click = true;
 		start = clock();
 	}
-	
+
 	RenderScene();
 }
 
@@ -384,6 +400,9 @@ void keys(unsigned char key, int x, int y)
 	if (!click) {
 		click = true;
 		start = clock();
+	}
+	if (key == 's') {
+		day = 0;
 	}
 
 
@@ -539,11 +558,7 @@ GLbyte* LoadTGAImage(const char* FileName, GLint* ImWidth, GLint* ImHeight, GLin
 void texture(int textureID) {//plik to nazwa wczytywanego pliku
 
 	glTexImage2D(GL_TEXTURE_2D, 0, ImComponents[textureID], ImWidth[textureID], ImHeight[textureID], 0, ImFormat[textureID], GL_UNSIGNED_BYTE, textures[textureID]);//zdefiniowanie tekstury
-	glEnable(GL_CULL_FACE);//uruchomienie teksturowania jednostronnego
-	glCullFace(GL_FRONT);//uruchomienie teksturowania frontu
-	glEnable(GL_TEXTURE_2D);//uruchomienie tekstur
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//tryb teksturowania
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//sposob nakladania tekstur
+
 }
 
 void loadTextures() {
@@ -583,6 +598,12 @@ void material() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, MatSpecular);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, MatShininess);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+
+	glEnable(GL_CULL_FACE);//uruchomienie teksturowania jednostronnego
+	glCullFace(GL_BACK);//uruchomienie teksturowania frontu
+	glEnable(GL_TEXTURE_2D);//uruchomienie tekstur
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);//tryb teksturowania
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);//sposob nakladania tekstur
 }
 
 void light() {
@@ -612,6 +633,10 @@ void MyInit()
 	material();
 	light();
 	loadTextures();
+	sphere = gluNewQuadric();
+	gluQuadricDrawStyle(sphere, GLU_FILL);
+	gluQuadricTexture(sphere, GL_TRUE);
+	gluQuadricNormals(sphere, GLU_SMOOTH);
 }
 
 void ChangeSize(GLsizei horizontal, GLsizei vertical)
@@ -658,7 +683,7 @@ void main(void)
 	cout << "" << endl;
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(1600, 1000);
-	glutCreateWindow("Układ Słoneczny");
+	glutCreateWindow("Symulacja Układu Słonecznego - index: 252724");
 	glutDisplayFunc(RenderScene);
 	glutReshapeFunc(ChangeSize);
 	MyInit();
