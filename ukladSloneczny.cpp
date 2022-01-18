@@ -40,9 +40,9 @@ float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30 };
 bool simulation = false;
 float ring[3600];
 int segments = 40;
-int rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
+double rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
 GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3, 0 };
-GLfloat rotation[] = { 1407.5, 5832, 23.9333, 24.6, 9.9167, 10.6667, 17.2333, 16, 624.6 };
+GLfloat rotation[] = { 1407, 5832, 24, 24, 10, 11, 17, 16, 625 };
 GLbyte* textures[10];
 GLint ImWidth[10], ImHeight[10], ImComponents[10];
 GLenum ImFormat[10];
@@ -60,24 +60,23 @@ void planet(int planetID) {
 
 	glRotated(-planetTilt[planetID], 1.0, 0.0, 0.0);
 
-	glRotated(360 * (((double)(day * 24) + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
+	glRotated(360 * ((((double)day * 24) + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
 
 	gluSphere(sphere, planetSize[planetID], segments, segments);
 
-	glRotated(-360 * ((day * 24 + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
+	glRotated(-360 * (((double)day * 24 + hour) / rotation[planetID]), 0.0, 0.0, 1.0);
 
 	glRotated(planetTilt[planetID], 1.0, 0.0, 0.0);
 
 	glRotated(90.0, 1.0, 1.0, 0.0);
 }
 
-void angle(int planetID, double& x, double& y) {
-	double time = (double)(day + (double)(hour/24));
-	double timeMax = (days[planetID]);
-	double angle = (double)time / timeMax;
+void angle(int planetID, GLdouble& x, GLdouble& y) {
+	GLdouble time = (double)(day + ((1.0*hour)/24));
+	GLdouble timeMax = (days[planetID]);
+	GLdouble angle = (double)time / timeMax;
 	x = cos(2 * angle * M_PI) * radius[planetID];
 	y = -1 * sin(2 * angle * M_PI) * radius[planetID];
-	cout << time << endl;
 }
 
 void orbit(int planet) {
@@ -101,7 +100,11 @@ void orbits() {
 
 void sun() {
 	texture(8);
-	planet(8);
+	glRotated(90, 1.0, 0.0, 0.0);
+	glRotated(-360 * ((((double)day * 24) + hour) / rotation[8]), 0.0, 0.0, 1.0);
+	gluSphere(sphere, planetSize[8], segments, segments);
+	glRotated(360 * (((double)day * 24 + hour) / rotation[8]), 0.0, 0.0, 1.0);
+	glRotated(-90, 1.0, 0.0, 0.0);
 }
 
 void mercury() {
@@ -161,9 +164,8 @@ void saturn() {
 	glTranslated(x, 0, y);
 	texture(5);
 	planet(5);
-	glRotated(-planetTilt[5], 0.0, 1.0, 0.0);
-
-	for (int i : rings) {
+	glRotated(1.2*planetTilt[5], -1.0, 0.0, 1.0);
+	for (double i : rings) {
 		glColor3f(1, 1, 1);
 
 		glBegin(GL_LINE_LOOP);
@@ -177,7 +179,7 @@ void saturn() {
 		glEnd();
 	}
 
-	glRotated(planetTilt[5], 0.0, 1.0, 0.0);
+	glRotated(-1.2 * planetTilt[5], -1.0, 0.0, 1.0);
 	glTranslated(-x, 0, -y);
 }
 
@@ -219,14 +221,14 @@ void zoom(bool zoom) {
 }
 
 
-void ukladSloneczny() {
+void solarSystem() {
 	if (statusRight == 1) {
 		zoom(delta_y > 0);
 	}
 
 	if (statusLeft == 1) {
-		azymuth += delta_x * pix2angle * 0.01;
-		elevation -= delta_y * pix2angle * 0.01;
+		azymuth += (float)(delta_x * pix2angle) * 0.01;
+		elevation -= (float)(delta_y * pix2angle) * 0.01;
 		if (sin(elevation) >= 0.99) {
 			elevation = 1.44;
 		}
@@ -366,7 +368,7 @@ void RenderScene(void)
 		day--;
 	}
 
-	ukladSloneczny();
+	solarSystem();
 	printDay();
 
 	glutSwapBuffers();
@@ -699,7 +701,7 @@ void dayByDay() {
 }
 
 
-void main(void)
+int main(void)
 {
 	srand(time(NULL));
 	start = clock();
