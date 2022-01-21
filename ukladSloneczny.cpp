@@ -11,6 +11,12 @@
 #include <thread>
 using namespace std;
 
+//todo:
+//eliptic orbits
+//angles of orbits
+//use of keybord
+//light
+
 typedef float point3[3];
 typedef float point9[9];
 
@@ -72,7 +78,7 @@ void planet(int planetID) {
 }
 
 void angle(int planetID, GLdouble& x, GLdouble& y) {
-	GLdouble time = (double)(day + ((1.0*hour)/24));
+	GLdouble time = (double)(day + ((1.0 * hour) / 24));
 	GLdouble timeMax = (days[planetID]);
 	GLdouble angle = (double)time / timeMax;
 	x = cos(2 * angle * M_PI) * radius[planetID];
@@ -164,7 +170,7 @@ void saturn() {
 	glTranslated(x, 0, y);
 	texture(5);
 	planet(5);
-	glRotated(1.2*planetTilt[5], -1.0, 0.0, 1.0);
+	glRotated(1.2 * planetTilt[5], -1.0, 0.0, 1.0);
 	for (double i : rings) {
 		glColor3f(1, 1, 1);
 
@@ -265,77 +271,110 @@ void printDay() {
 	texture(9);
 	glRasterPos2i(10, 970);
 	char printDay[characters];
-	sprintf_s(printDay, " Day: %d", day);
+	sprintf_s(printDay, " Day: %d;", day);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glRasterPos2i(10, 945);
-	sprintf_s(printDay, " Hour: %d", hour);
+	sprintf_s(printDay, " Hour: %d;", hour);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glRasterPos2i(10, 920);
-	sprintf_s(printDay, " Speed: %d hours/second", speed * 10);
+	sprintf_s(printDay, " Speed: %d hours/second;", speed * 10);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glRasterPos2i(10, 895);
-	sprintf_s(printDay, " Speed: %d days/second", (int)(speed * 10) / 24);
+	sprintf_s(printDay, " Speed: %d days/second;", (int)(speed * 10) / 24);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	if (show) {
 		glRasterPos2i(400, 600);
-		sprintf_s(printDay, " u - increase speed");
+		sprintf_s(printDay, " u - increase speed;");
 		for (int i = 0; i < characters; ++i) {
+			if (printDay[i] == ';') {
+				break;
+			}
 			glColor3f(1, 1, 1);
 			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 		}
 		glRasterPos2i(400, 560);
-		sprintf_s(printDay, " j - decrease speed");
+		sprintf_s(printDay, " j - decrease speed;");
 		for (int i = 0; i < characters; ++i) {
+			if (printDay[i] == ';') {
+				break;
+			}
 			glColor3f(1, 1, 1);
 			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 		}
 		glRasterPos2i(400, 520);
-		sprintf_s(printDay, " left mouse - move camera");
+		sprintf_s(printDay, " left mouse - move camera;");
 		for (int i = 0; i < characters; ++i) {
+			if (printDay[i] == ';') {
+				break;
+			}
 			glColor3f(1, 1, 1);
 			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 		}
 		glRasterPos2i(400, 480);
-		sprintf_s(printDay, " right mouse - zoom");
+		sprintf_s(printDay, " right mouse - zoom;");
 		for (int i = 0; i < characters; ++i) {
+			if (printDay[i] == ';') {
+				break;
+			}
 			glColor3f(1, 1, 1);
 			glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 		}
 	}
 
 	glRasterPos2i(840, 970);
-	sprintf_s(printDay, " x: %f", viewer[0]);
+	sprintf_s(printDay, " x: %f;", viewer[0]);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glRasterPos2i(840, 945);
-	sprintf_s(printDay, " z: %f", viewer[1]);
+	sprintf_s(printDay, " z: %f;", viewer[1]);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
 
 	glRasterPos2i(840, 920);
-	sprintf_s(printDay, " y: %f", viewer[2]);
+	sprintf_s(printDay, " y: %f;", viewer[2]);
 	for (int i = 0; i < characters; ++i) {
+		if (printDay[i] == ';') {
+			break;
+		}
 		glColor3f(1, 1, 1);
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, printDay[i]);
 	}
@@ -413,6 +452,7 @@ void Mouse(int btn, int state, int x, int y)
 
 void keys(unsigned char key, int x, int y)
 {
+	int vectorMultiplier = 7;
 	if (key == 'r') {
 		viewer[0] = 0;
 		viewer[1] = 500;
@@ -422,17 +462,61 @@ void keys(unsigned char key, int x, int y)
 		viewer[5] = 0;
 
 	}
+
 	if (key == 'u') {
 		speed++;
 	}
 	if (key == 'j') {
 		speed--;
 	}
+
+	if (key == 'w') {
+		double x = viewer[3] - viewer[0];
+		double y = viewer[5] - viewer[2];
+		double vector = sqrt(pow(x, 2) + pow(y, 2));
+
+		viewer[3] += vectorMultiplier * x / vector;
+		viewer[0] += vectorMultiplier * x / vector;
+		viewer[5] += vectorMultiplier * y / vector;
+		viewer[2] += vectorMultiplier * y / vector;
+
+	}
+	if (key == 's') {
+		double x = viewer[3] - viewer[0];
+		double y = viewer[5] - viewer[2];
+		double vector = sqrt(pow(x, 2) + pow(y, 2));
+
+		viewer[3] -= vectorMultiplier * x / vector;
+		viewer[0] -= vectorMultiplier * x / vector;
+		viewer[5] -= vectorMultiplier * y / vector;
+		viewer[2] -= vectorMultiplier * y / vector;
+	}
+	if (key == 'a') {
+		double x = viewer[3] - viewer[0];
+		double y = viewer[5] - viewer[2];
+		double vector = sqrt(pow(x, 2) + pow(y, 2));
+
+		viewer[3] += vectorMultiplier * y / vector;
+		viewer[0] += vectorMultiplier * y / vector;
+		viewer[5] -= vectorMultiplier * x / vector;
+		viewer[2] -= vectorMultiplier * x / vector;
+	}
+	if (key == 'd') {
+		double x = viewer[3] - viewer[0];
+		double y = viewer[5] - viewer[2];
+		double vector = sqrt(pow(x, 2) + pow(y, 2));
+
+		viewer[3] -= vectorMultiplier * y / vector;
+		viewer[0] -= vectorMultiplier * y / vector;
+		viewer[5] += vectorMultiplier * x / vector;
+		viewer[2] += vectorMultiplier * x / vector;
+	}
+
 	if (!click) {
 		click = true;
 		start = clock();
 	}
-	if (key == 's') {
+	if (key == 't') {
 		day = 0;
 	}
 
@@ -645,7 +729,7 @@ void light() {
 	float LightEmission[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightDiffuse[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float LightPosition[] = { 0.0f, 0.0f, 0.0f };
+	float LightPosition[] = { 0.0f, 0.0f, 41.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);
