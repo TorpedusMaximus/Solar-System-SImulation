@@ -86,7 +86,7 @@ void radiusAngle(int planetID, GLdouble& r, GLdouble& angle) {
 	GLdouble time = (double)(day + ((1.0 * hour) / 24));
 	GLdouble timeMax = (days[planetID]);
 	GLdouble ratio = time / timeMax;
-	angle = 2*M_PI*ratio;
+	angle = 2 * M_PI * ratio;
 
 	double e = orbitsEccentrity[planetID];
 	double baRatio = sqrt(1 - pow(e, 2));
@@ -96,11 +96,11 @@ void radiusAngle(int planetID, GLdouble& r, GLdouble& angle) {
 	/*GLdouble p = pow(b, 2) / a;             //proba dostosowania predkosci planet (II prawo Keplera)
 	GLdouble M = 2 * p * ratio;
 
-	GLdouble E[2];                                
+	GLdouble E[2];
 
 	E[1] = M;
 
-	do {                                                     
+	do {
 		E[0] = E[1];
 		E[1] = M + e * sin(E[0]);
 	} while (abs(E[1] - E[0]) > 0.001);
@@ -353,7 +353,7 @@ void printDay() {
 	}
 
 	glRasterPos2i(840, 945);
-	sprintf_s(printDay, " z: %f;", viewer[1]);
+	sprintf_s(printDay, " y: %f;", viewer[1]);
 	for (int i = 0; i < characters; ++i) {
 		if (printDay[i] == ';') {
 			break;
@@ -363,7 +363,7 @@ void printDay() {
 	}
 
 	glRasterPos2i(840, 920);
-	sprintf_s(printDay, " y: %f;", viewer[2]);
+	sprintf_s(printDay, " z: %f;", viewer[2]);
 	for (int i = 0; i < characters; ++i) {
 		if (printDay[i] == ';') {
 			break;
@@ -402,6 +402,22 @@ void RenderScene(void)
 
 	solarSystem();
 	printDay();
+
+	int lightRadius = 50;
+	int lightAngle = 60;
+	for (int i = 0; i <= 5; i++) {
+
+		GLfloat x = cos(i * lightAngle) * lightRadius;
+		GLfloat y = -1 * sin(i * lightAngle) * lightRadius;
+		GLfloat LightPosition[] = { x, 0.0f, y, 1.0f };
+		glLightfv(GL_LIGHT0 + i, GL_POSITION, LightPosition);
+	}
+
+	GLfloat topLightPosition[] = { 0, lightRadius, 0, 1.0f };
+	glLightfv(GL_LIGHT6, GL_POSITION, topLightPosition);
+	GLfloat bottomLightPosition[]= { 0, -lightRadius, 0, 1.0f };
+	glLightfv(GL_LIGHT7, GL_POSITION, bottomLightPosition);
+
 
 	glutSwapBuffers();
 }
@@ -715,23 +731,25 @@ void material() {
 }
 
 void light() {
-	GLfloat att_constant = { 1.0 };
-	GLfloat att_linear = { 0.000000005 };
-	GLfloat att_quadratic = { 0.0000000000001 };
+	GLfloat att_constant = { 0.7 };
+	GLfloat att_linear = { 0.0000005 };
+	GLfloat att_quadratic = { 0.00000000001 };
 	float LightAmbient[] = { 0.1f, 0.1f, 0.05f, 1.0f };
 	float LightEmission[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightDiffuse[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float LightPosition[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);
-	glLightfv(GL_LIGHT0, GL_POSITION, LightPosition);
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, att_constant);
-	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, att_linear);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, att_quadratic);
+
+	for (int i = 0; i <= 7; i++) {
+		glLightfv(GL_LIGHT0 + i, GL_AMBIENT, LightAmbient);
+		glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, LightDiffuse);
+		glLightfv(GL_LIGHT0 + i, GL_SPECULAR, LightSpecular);
+		glLightf(GL_LIGHT0 + i, GL_CONSTANT_ATTENUATION, att_constant);
+		glLightf(GL_LIGHT0 + i, GL_LINEAR_ATTENUATION, att_linear);
+		glLightf(GL_LIGHT0 + i, GL_QUADRATIC_ATTENUATION, att_quadratic);
+		glEnable(GL_LIGHT0 + i);
+	}
+
 	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 }
 
