@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="tests.cpp" />
     <ClCompile Include="ukladSloneczny.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -12,9 +12,8 @@
 using namespace std;
 
 //todo:
-//eliptic orbits
+//orbital velocity
 //angles of orbits
-//use of keybord
 //light
 
 typedef float point3[3];
@@ -49,6 +48,7 @@ int segments = 40;
 double rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
 GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3, 0 };
 GLfloat rotation[] = { 1407, 5832, 24, 24, 10, 11, 17, 16, 625 };
+GLfloat orbitsEccentrity[] = { 0.206, 0.007, 0.017, 0.093, 0.048, 0.056, 0.046, 0.010 };
 GLbyte* textures[10];
 GLint ImWidth[10], ImHeight[10], ImComponents[10];
 GLenum ImFormat[10];
@@ -61,7 +61,7 @@ bool click = false;
 
 void texture(int textureID);
 
-void planet(int planetID) {
+void planetRotation(int planetID) {
 	glRotated(-90.0, 1.0, 1.0, 0.0);
 
 	glRotated(-planetTilt[planetID], 1.0, 0.0, 0.0);
@@ -77,30 +77,77 @@ void planet(int planetID) {
 	glRotated(90.0, 1.0, 1.0, 0.0);
 }
 
-void angle(int planetID, GLdouble& x, GLdouble& y) {
+void translateAngle(int r, GLdouble elipseAngle, GLdouble& x, GLdouble& y) {
+	x = cos(elipseAngle) * r;
+	y = -1 * sin(elipseAngle) * r;
+}
+
+void radiusAngle(int planetID, GLdouble& r, GLdouble& angle) {
 	GLdouble time = (double)(day + ((1.0 * hour) / 24));
 	GLdouble timeMax = (days[planetID]);
-	GLdouble angle = (double)time / timeMax;
-	x = cos(2 * angle * M_PI) * radius[planetID];
-	y = -1 * sin(2 * angle * M_PI) * radius[planetID];
+	GLdouble ratio = time / timeMax;
+	angle = 2*M_PI*ratio;
+
+	double e = orbitsEccentrity[planetID];
+	double baRatio = sqrt(1 - pow(e, 2));
+	double a = radius[planetID];
+	double b = a * baRatio;
+
+	/*GLdouble p = pow(b, 2) / a;             //proba dostosowania predkosci planet (II prawo Keplera)
+	GLdouble M = 2 * p * ratio;
+
+	GLdouble E[2];                                
+
+	E[1] = M;
+
+	do {                                                     
+		E[0] = E[1];
+		E[1] = M + e * sin(E[0]);
+	} while (abs(E[1] - E[0]) > 0.001);
+
+	GLdouble cosn = (cos(E[1]) - e) / (1 - e * cos(E[1]));
+	angle = cosh(cosn);
+	if (planetID == 0)
+		cout << angle << endl;*/
+
+	double top = a * (1 - pow(e, 2));
+	double bottom = 1 + e * cos(angle);
+
+	r = top / bottom;
+}
+
+GLdouble orbitPoint(int planetID, GLdouble& r, GLdouble ratio) {
+	GLdouble angle = 2 * ratio * M_PI;
+
+	double e = orbitsEccentrity[planetID];
+	double baRatio = sqrt(1 - pow(e, 2));
+	double a = radius[planetID];
+	double b = a * baRatio;
+
+	double top = a * (1 - pow(e, 2));
+	double bottom = 1 + e * cos(angle);
+
+	r = top / bottom;
+
+	return angle;
 }
 
 void orbit(int planet) {
+	glColor3f(1, 1, 1);
 	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < 360; i++) {
-		float angle = 1.0 * float(i) / float(360);
-		float x = planet * cos(2 * M_PI * angle);
-		float y = planet * sin(2 * M_PI * angle);
-
-		glVertex3f(x, 0, y);
+	for (int i = 0; i < 3600; i++) {
+		GLdouble r, x, y;
+		GLdouble ratio = 1.0 * GLdouble(i) / GLdouble(360);
+		GLdouble angle = orbitPoint(planet, r, ratio);
+		translateAngle(r, angle, x, y);
+		glVertex3d(x, 0, y);
 	}
 	glEnd();
 }
 
 void orbits() {
-	texture(9);
-	for (int planet : radius) {
-		orbit(planet);
+	for (int i = 0; i < 9; i++) {
+		orbit(i);
 	}
 }
 
@@ -113,63 +160,35 @@ void sun() {
 	glRotated(-90, 1.0, 0.0, 0.0);
 }
 
-void mercury() {
-	double x, y;
-	angle(0, x, y);
+void planets() {
+	for (int i = 0; i < 8; i++) {
+		if (i == 5) {
+			continue;
+		}
 
-	glTranslated(x, 0, y);
-	texture(0);
-	planet(0);
-	glTranslated(-x, 0, -y);
-}
+		GLdouble r, elipseAngle;
+		radiusAngle(i, r, elipseAngle);
 
-void venus() {
-	double x, y;
-	angle(1, x, y);
+		GLdouble x, y;
+		translateAngle(r, elipseAngle, x, y);
 
-	glTranslated(x, 0, y);
-	texture(1);
-	planet(1);
-	glTranslated(-x, 0, -y);
-}
-
-void earth() {
-	double x, y;
-	angle(2, x, y);
-
-	glTranslated(x, 0, y);
-	texture(2);
-	planet(2);
-	glTranslated(-x, 0, -y);
-}
-
-void mars() {
-	double x, y;
-	angle(3, x, y);
-
-	glTranslated(x, 0, y);
-	texture(3);
-	planet(3);
-	glTranslated(-x, 0, -y);
-}
-
-void jupiter() {
-	double x, y;
-	angle(4, x, y);
-
-	glTranslated(x, 0, y);
-	texture(4);
-	planet(4);
-	glTranslated(-x, 0, -y);
+		glTranslated(x, 0, y);
+		texture(i);
+		planetRotation(i);
+		glTranslated(-x, 0, -y);
+	}
 }
 
 void saturn() {
-	double x, y;
-	angle(5, x, y);
+	GLdouble r, elipseAngle;
+	radiusAngle(5, r, elipseAngle);
+
+	GLdouble x, y;
+	translateAngle(r, elipseAngle, x, y);
 
 	glTranslated(x, 0, y);
 	texture(5);
-	planet(5);
+	planetRotation(5);
 	glRotated(1.2 * planetTilt[5], -1.0, 0.0, 1.0);
 	for (double i : rings) {
 		glColor3f(1, 1, 1);
@@ -186,26 +205,6 @@ void saturn() {
 	}
 
 	glRotated(-1.2 * planetTilt[5], -1.0, 0.0, 1.0);
-	glTranslated(-x, 0, -y);
-}
-
-void uranus() {
-	double x, y;
-	angle(6, x, y);
-
-	glTranslated(x, 0, y);
-	texture(6);
-	planet(6);
-	glTranslated(-x, 0, -y);
-}
-
-void neptune() {
-	double x, y;
-	angle(7, x, y);
-
-	glTranslated(x, 0, y);
-	texture(7);
-	planet(7);
 	glTranslated(-x, 0, -y);
 }
 
@@ -233,8 +232,8 @@ void solarSystem() {
 	}
 
 	if (statusLeft == 1) {
-		azymuth += (float)(delta_x * pix2angle) * 0.01;
-		elevation -= (float)(delta_y * pix2angle) * 0.01;
+		azymuth += ((float)delta_x * pix2angle) * 0.01;
+		elevation -= ((float)delta_y * pix2angle) * 0.01;
 		if (sin(elevation) >= 0.99) {
 			elevation = 1.44;
 		}
@@ -248,14 +247,8 @@ void solarSystem() {
 
 	orbits();
 	sun();
-	mercury();
-	venus();
-	earth();
-	mars();
-	jupiter();
+	planets();
 	saturn();
-	uranus();
-	neptune();
 }
 
 void printDay() {
@@ -723,13 +716,13 @@ void material() {
 
 void light() {
 	GLfloat att_constant = { 1.0 };
-	GLfloat att_linear = { 0.05 };
-	GLfloat att_quadratic = { 0.001 };
+	GLfloat att_linear = { 0.000000005 };
+	GLfloat att_quadratic = { 0.0000000000001 };
 	float LightAmbient[] = { 0.1f, 0.1f, 0.05f, 1.0f };
 	float LightEmission[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightDiffuse[] = { 1.0f, 1.0f, 0.8f, 1.0f };
 	float LightSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float LightPosition[] = { 0.0f, 0.0f, 41.0f, 1.0f };
+	float LightPosition[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	glLightfv(GL_LIGHT0, GL_AMBIENT, LightAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, LightDiffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, LightSpecular);
@@ -785,7 +778,7 @@ void dayByDay() {
 }
 
 
-int main(void)
+void main(void)
 {
 	srand(time(NULL));
 	start = clock();
