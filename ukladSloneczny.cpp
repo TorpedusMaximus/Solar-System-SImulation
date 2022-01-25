@@ -47,7 +47,7 @@ int segments = 40;//dokladnosc obiektow
 
 int days[] = { 88,224,365,686,4333,10756,30707, 60223 };//dane dotyczadce rysowanych obiektow
 int radius[] = { 57,108,149,227,778,1433,2872,4498 };
-float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30 };
+float planetSize[] = { 4.87, 12.1, 12.76, 6.79, 71, 60, 25, 24, 30.602 };
 double rings[] = { 102,102.3,102.6,103,103.8,104,110,115,119,125,132,136,141,146,149,155,156,158,160,165 };
 GLfloat planetTilt[] = { 0, 177.3, 23.4, 25.2, 3.1, 26.7, 97.8, 28.3, 0 };
 GLfloat rotation[] = { 1407, 5832, 24, 24, 10, 11, 17, 16, 625 };
@@ -247,11 +247,8 @@ void solarSystem() {
 	viewer[5] = 10 * sin(azymuth) * cos(elevation) + viewer[2];
 
 
-	if (statusOrbits) {//wlaczenie rysowania orbit
-		orbits();
-	}
-
-	sun();//rysowanie obiektow
+	orbits();//rysowanie obiektow
+	sun();
 	planets();
 	saturn();//saturn rysowany oddzielnie ze wzgledu na rysowanie pierscieni
 }
@@ -404,6 +401,7 @@ void RenderScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
+	gluLookAt(viewer[0], viewer[1], viewer[2], viewer[3], viewer[4], viewer[5], 0.0, 1.0, 0.0);//ustawienie kamery
 
 	if (click && show) {//wylaczenie pomocy 
 		time_t now = clock();
@@ -422,9 +420,8 @@ void RenderScene(void)
 	}
 
 	solarSystem();//rysowanie sceny
-	gluLookAt(viewer[0], viewer[1], viewer[2], viewer[3], viewer[4], viewer[5], 0.0, 1.0, 0.0);//ustawienie kamery
-	printData();//wypisanie informacji
 	light();//rysowanie oswietlenia
+	printData();//wypisanie informacji
 
 	glutSwapBuffers();//rysoawnie wygenerowanej sceny na ekranie
 }
@@ -721,7 +718,6 @@ void loadTextures() {//wczytanie wszytskich tekstur do pamieci
 		textures[i] = pBytes;//zapis do pamieci
 		i++;
 	}
-
 }
 
 void material() {
@@ -745,7 +741,7 @@ void material() {
 }
 
 void lightInit() {
-	GLfloat att_constant = { 0.7 };//parametry swiatla
+	GLfloat att_constant = { 1.0 };//parametry swiatla
 	GLfloat att_linear = { 0.0000005 };
 	GLfloat att_quadratic = { 0.00000000001 };
 	float LightAmbient[] = { 0.1f, 0.1f, 0.05f, 1.0f };
